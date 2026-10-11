@@ -1,30 +1,50 @@
+@mixin dark-theme {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --text: #f5f5f7;
+  --text-secondary: #b0b0b5;
+  --border: #8e8e93;
+  --accent: #0a84ff;
+  --accent-text: #06182b;
+  --fill: #2c2c2e;
+  --radius: 18px;
+  --shadow: none;
+  --shadow-small: none;
+  --danger: #ff7b72;
+  --scrim: rgb(0 0 0 / 48%);
+}
+
 :root {
   color-scheme: light;
   --bg: #f5f5f7;
   --surface: #ffffff;
   --text: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --border: #d2d2d7;
-  --accent: #0066cc;
+  --text-secondary: #5f6368;
+  --border: #76767b;
+  --accent: #005bb5;
   --accent-text: #ffffff;
   --fill: #e8e8ed;
   --radius: 18px;
   --shadow: 0 8px 24px rgb(0 0 0 / 8%);
+  --shadow-small: 0 2px 8px rgb(0 0 0 / 8%);
+  --danger: #b42318;
+  --scrim: rgb(0 0 0 / 48%);
+  --dur-fast: 150ms;
+  --dur: 250ms;
+  --dur-slow: 400ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #000000;
-    --surface: #1c1c1e;
-    --text: #f5f5f7;
-    --text-secondary: #a1a1a6;
-    --border: #38383a;
-    --accent: #0a84ff;
-    --accent-text: #ffffff;
-    --fill: #2c2c2e;
-    --shadow: 0 8px 24px rgb(0 0 0 / 30%);
+  :root:not([data-theme='light']) {
+    @include dark-theme;
   }
+}
+
+:root[data-theme='dark'] {
+  @include dark-theme;
 }
 
 *,
@@ -67,4 +87,103 @@ p {
   background: color-mix(in srgb, var(--surface) 82%, transparent);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
+}
+
+.theme-switching body,
+.theme-switching app-card,
+.theme-switching app-button button,
+.theme-switching app-input input,
+.theme-switching app-cover-picker input,
+.theme-switching app-cover .cover,
+.theme-switching app-cover-picker button,
+.theme-switching .segmented button,
+.theme-switching app-tab-bar,
+.theme-switching app-sheet .sheet__close,
+.theme-switching app-sheet .sheet-panel {
+  transition:
+    background-color var(--dur) ease,
+    color var(--dur) ease,
+    border-color var(--dur) ease,
+    box-shadow var(--dur) ease;
+}
+
+::view-transition-old(root) {
+  animation: route-out var(--dur) var(--ease-out) both;
+}
+
+::view-transition-new(root) {
+  animation: route-in var(--dur) var(--ease-out) both;
+}
+
+::view-transition-group(tab-bar) {
+  animation: none;
+}
+
+@keyframes route-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes route-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur: 1ms;
+    --dur-slow: 1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*) {
+    animation: none !important;
+  }
+
+  .button:hover:not(:disabled),
+  .button:active:not(:disabled),
+  .segmented button:active,
+  .status-check:active,
+  .remove-confirm button:active,
+  .item-links a:active,
+  .tab-bar__link--active svg {
+    transform: none !important;
+  }
+
+  .cdk-drag-preview {
+    scale: 1;
+  }
+
+  app-sheet .sheet-panel,
+  app-sheet .sheet-panel--closing {
+    transform: none !important;
+  }
+
+  .theme-switching body,
+  .theme-switching app-card,
+  .theme-switching app-button button,
+  .theme-switching app-input input,
+  .theme-switching app-cover-picker input,
+  .theme-switching app-tab-bar,
+  .theme-switching app-sheet .sheet-panel {
+    transition: none !important;
+  }
 }

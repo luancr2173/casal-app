@@ -60,6 +60,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         left: 0;
         padding: 10px 20px calc(10px + env(safe-area-inset-bottom));
         border-top: 1px solid var(--border);
+        view-transition-name: tab-bar;
       }
 
       .tab-bar__items {
@@ -80,15 +81,21 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         color: var(--text-secondary);
         font-size: 11px;
         text-decoration: none;
+        transition: color var(--dur-fast) var(--ease-out);
       }
 
       .tab-bar__link svg {
         width: 22px;
         height: 22px;
+        transition: transform var(--dur-fast) var(--ease-ios);
       }
 
       .tab-bar__link--active {
         color: var(--accent);
+      }
+
+      .tab-bar__link--active svg {
+        transform: scale(1.06);
       }
 
       .tab-bar__link:focus-visible {

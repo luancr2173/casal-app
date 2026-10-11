@@ -118,9 +118,14 @@ type SpaceAction = 'create' | 'join';
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
+        transition:
+          background-color var(--dur-fast) var(--ease-out),
+          color var(--dur-fast) var(--ease-out),
+          transform var(--dur-fast) var(--ease-ios);
       }
 
       .segmented button.segmented__option--active {
+        border: 1px solid var(--border);
         background: var(--surface);
         color: var(--text);
         box-shadow: var(--shadow);
@@ -129,6 +134,10 @@ type SpaceAction = 'create' | 'join';
       .segmented button:focus-visible {
         outline: 3px solid var(--accent);
         outline-offset: 2px;
+      }
+
+      .segmented button:active {
+        transform: scale(0.98);
       }
 
       form,
@@ -153,6 +162,19 @@ type SpaceAction = 'create' | 'join';
 
       .form-message {
         margin: 0;
+        color: var(--danger);
+        animation: auth-message-in var(--dur) var(--ease-out) both;
+      }
+
+      @keyframes auth-message-in {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     `,
   ],

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
+import { ThemeService } from './core/theme.service';
 import { TabBarComponent } from './shared/ui/tab-bar.component';
 
 @Component({
@@ -27,6 +28,7 @@ import { TabBarComponent } from './shared/ui/tab-bar.component';
   ],
 })
 export class App {
+  private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly currentUrl = toSignal(
     this.router.events.pipe(

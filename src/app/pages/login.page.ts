@@ -66,6 +66,8 @@ import { InputComponent } from '../shared/ui/input.component';
 
       .form-message {
         margin: 0;
+        color: var(--danger);
+        animation: auth-message-in var(--dur) var(--ease-out) both;
       }
 
       a {
@@ -77,6 +79,17 @@ import { InputComponent } from '../shared/ui/input.component';
         border-radius: 3px;
         outline: 3px solid var(--accent);
         outline-offset: 3px;
+      }
+
+      @keyframes auth-message-in {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     `,
   ],

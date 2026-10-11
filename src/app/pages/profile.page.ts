@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { Router } from '@angular/router';
 import { AuthService } from '../core/auth.service';
 import { CoupleService } from '../core/couple.service';
+import { ThemeService, type ThemeMode } from '../core/theme.service';
 import { ButtonComponent } from '../shared/ui/button.component';
 import { CardComponent } from '../shared/ui/card.component';
 
@@ -42,8 +43,31 @@ import { CardComponent } from '../shared/ui/card.component';
         <p role="status" aria-live="polite">Carregando perfil…</p>
       }
       @if (error()) {
-        <p role="alert" aria-live="polite">{{ error() }}</p>
+        <p class="profile-error" role="alert" aria-live="polite">{{ error() }}</p>
       }
+      <app-card>
+        <section class="appearance" aria-labelledby="appearance-title">
+          <div>
+            <h2 id="appearance-title">Aparência</h2>
+            <p>Escolha como o CasalApp deve aparecer neste dispositivo.</p>
+          </div>
+          <div class="segmented" role="radiogroup" aria-label="Tema do aplicativo">
+            @for (option of themeOptions; track option.value; let index = $index) {
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="theme.mode() === option.value"
+                [attr.tabindex]="theme.mode() === option.value ? 0 : -1"
+                [class.segmented__option--active]="theme.mode() === option.value"
+                (click)="theme.setMode(option.value)"
+                (keydown)="onThemeKeydown($event, index)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        </section>
+      </app-card>
       <app-button variant="secondary" [disabled]="loading()" (click)="signOut()">
         {{ loading() ? 'Saindo…' : 'Sair' }}
       </app-button>
@@ -94,17 +118,123 @@ import { CardComponent } from '../shared/ui/card.component';
         letter-spacing: 0.12em;
         overflow-wrap: anywhere;
       }
+
+      .appearance {
+        display: grid;
+        gap: 18px;
+      }
+
+      .appearance h2 {
+        margin: 0;
+      }
+
+      .appearance p {
+        margin: 8px 0 0;
+        line-height: 1.45;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+        padding: 4px;
+        border-radius: 14px;
+        background: var(--fill);
+      }
+
+      .segmented button {
+        min-height: 44px;
+        padding: 8px;
+        border: 0;
+        border-radius: 11px;
+        background: transparent;
+        color: var(--text-secondary);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background-color var(--dur-fast) var(--ease-out),
+          color var(--dur-fast) var(--ease-out),
+          transform var(--dur-fast) var(--ease-ios);
+      }
+
+      .segmented button.segmented__option--active {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow);
+      }
+
+      .segmented button:focus-visible {
+        position: relative;
+        z-index: 1;
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .profile-error {
+        margin: 0;
+        color: var(--danger);
+        animation: profile-message-in var(--dur) var(--ease-out) both;
+      }
+
+      @keyframes profile-message-in {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
     `,
   ],
 })
 export class ProfilePage {
   readonly couples = inject(CoupleService);
+  readonly theme = inject(ThemeService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly copied = signal(false);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  protected readonly themeOptions: readonly { value: ThemeMode; label: string }[] = [
+    { value: 'system', label: 'Sistema' },
+    { value: 'light', label: 'Claro' },
+    { value: 'dark', label: 'Escuro' },
+  ];
+
+  protected onThemeKeydown(event: KeyboardEvent, index: number): void {
+    let nextIndex: number;
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        nextIndex = (index + 1) % this.themeOptions.length;
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        nextIndex = (index - 1 + this.themeOptions.length) % this.themeOptions.length;
+        break;
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = this.themeOptions.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    const option = this.themeOptions[nextIndex];
+    this.theme.setMode(option.value);
+    (event.currentTarget as HTMLElement)
+      .parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex]
+      ?.focus();
+  }
 
   async copyCode(code: string): Promise<void> {
     try {

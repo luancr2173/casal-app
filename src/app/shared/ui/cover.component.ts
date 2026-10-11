@@ -15,9 +15,11 @@ import {
         <img
           [src]="src()"
           [alt]="title()"
+          [class.cover__image--loaded]="imageLoaded()"
           loading="lazy"
           decoding="async"
           referrerpolicy="no-referrer"
+          (load)="imageLoaded.set(true)"
           (error)="failed.set(true)"
         />
       } @else {
@@ -35,10 +37,11 @@ import {
         flex: 0 0 auto;
         place-items: center;
         overflow: hidden;
+        border: 1px solid var(--border);
         border-radius: calc(var(--radius) * 0.55);
         background: var(--fill);
         color: var(--text-secondary);
-        box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+        box-shadow: var(--shadow-small);
         font-size: 28px;
         font-weight: 600;
       }
@@ -49,6 +52,12 @@ import {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        opacity: 0;
+        transition: opacity var(--dur) var(--ease-out);
+      }
+
+      img.cover__image--loaded {
+        opacity: 1;
       }
 
       .cover--small {
@@ -70,6 +79,7 @@ export class CoverComponent {
   readonly src = input<string | null>(null);
   readonly size = input<'small' | undefined>();
   protected readonly failed = signal(false);
+  protected readonly imageLoaded = signal(false);
   protected readonly initial = () =>
     this.title().trim().charAt(0).toLocaleUpperCase() || 'F';
 
@@ -77,6 +87,7 @@ export class CoverComponent {
     effect(() => {
       this.src();
       this.failed.set(false);
+      this.imageLoaded.set(false);
     });
   }
 }

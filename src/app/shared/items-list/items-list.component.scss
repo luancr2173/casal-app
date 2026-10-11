@@ -18,10 +18,15 @@
   gap: 12px;
 }
 
-.search-area > p,
-.message {
+.search-area > p {
   margin: 0;
   color: var(--text-secondary);
+}
+
+.message {
+  margin: 0;
+  color: var(--danger);
+  animation: message-enter var(--dur) var(--ease-out) both;
 }
 
 .manual-result {
@@ -37,6 +42,12 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-ios);
+}
+
+.remove-confirm button:active,
+.item-links a:active {
+  transform: scale(0.98);
 }
 
 .search-result,
@@ -99,10 +110,27 @@
 }
 
 .status-check {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
   border: 2px solid var(--border);
   border-radius: 50%;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-ios);
+}
+
+.status-check:active {
+  transform: scale(0.94);
+}
+
+.status-check span {
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-ios);
 }
 
 .status-check--done {
@@ -111,18 +139,22 @@
   color: var(--accent-text);
 }
 
+.status-check--done span {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .item-card {
   position: relative;
   display: grid;
-  grid-template-columns: 44px 30px 72px minmax(0, 1fr) 44px;
+  grid-template-columns: 44px 44px 72px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 8px;
   min-height: 128px;
-  animation: item-in 180ms ease both;
 }
 
 .item-card--place {
-  grid-template-columns: 44px 30px 72px minmax(0, 1fr) 44px;
+  grid-template-columns: 44px 44px 72px minmax(0, 1fr) 44px;
   cursor: pointer;
 }
 
@@ -155,7 +187,7 @@
 }
 
 .item-card--done {
-  grid-template-columns: 30px 72px minmax(0, 1fr) 44px;
+  grid-template-columns: 44px 72px minmax(0, 1fr) 44px;
   opacity: 0.8;
 }
 
@@ -239,7 +271,7 @@
 .skeleton-line {
   border-radius: 8px;
   background: var(--fill);
-  animation: pulse 1.3s ease-in-out infinite alternate;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite alternate;
 }
 
 .skeleton-poster {
@@ -296,20 +328,35 @@
   font: inherit;
   font-size: 13px;
   cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-ios);
 }
 
 .segmented button.segmented__option--active {
+  border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
   box-shadow: var(--shadow);
 }
 
+.segmented button:active {
+  transform: scale(0.98);
+}
+
 .cdk-drag-placeholder {
   opacity: 0.25;
+  transition: opacity var(--dur) var(--ease-out);
 }
 
 .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
-  transition: transform 180ms cubic-bezier(0, 0, 0.2, 1);
+  transition: transform var(--dur) var(--ease-ios);
+}
+
+.cdk-drag-preview {
+  scale: 1.02;
+  box-shadow: var(--shadow);
 }
 
 .manual-result:focus-visible,
@@ -325,16 +372,34 @@
   outline-offset: 2px;
 }
 
-@keyframes pulse {
+@keyframes skeleton-shimmer {
   to {
     opacity: 0.45;
   }
 }
 
-@keyframes item-in {
+@keyframes item-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes item-leave {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -344,23 +409,15 @@
 
 @media (max-width: 520px) {
   .item-card {
-    grid-template-columns: 36px 30px 60px minmax(0, 1fr) 40px;
+    grid-template-columns: 44px 44px 60px minmax(0, 1fr) 44px;
     gap: 5px;
   }
 
   .item-card--place {
-    grid-template-columns: 36px 30px 60px minmax(0, 1fr) 40px;
+    grid-template-columns: 44px 44px 60px minmax(0, 1fr) 44px;
   }
 
   .item-card--done {
-    grid-template-columns: 30px 60px minmax(0, 1fr) 40px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-poster,
-  .skeleton-line,
-  .item-card {
-    animation: none;
+    grid-template-columns: 44px 60px minmax(0, 1fr) 44px;
   }
 }

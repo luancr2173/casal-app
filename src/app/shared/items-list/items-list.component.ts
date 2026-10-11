@@ -106,10 +106,10 @@ function sortByPosition(items: ListItem[]): ListItem[] {
       }
 
       @if (error()) {
-        <p class="message" role="alert" aria-live="polite">{{ error() }}</p>
+        <p class="message" role="alert" aria-live="polite" animate.enter="message-enter">{{ error() }}</p>
       }
       @if (covers.signingError()) {
-        <p class="message" role="alert" aria-live="polite">{{ covers.signingError() }}</p>
+        <p class="message" role="alert" aria-live="polite" animate.enter="message-enter">{{ covers.signingError() }}</p>
       }
 
       <section class="list-section" aria-labelledby="pending-title">
@@ -122,7 +122,7 @@ function sortByPosition(items: ListItem[]): ListItem[] {
         @if (loading()) {
           <div class="skeleton-list" aria-label="Carregando lista" role="status">
             @for (skeleton of skeletons; track skeleton) {
-              <app-card>
+              <app-card animate.enter="item-enter" animate.leave="item-leave">
                 <div class="skeleton-card">
                   <span class="skeleton-poster"></span>
                   <span class="skeleton-line"></span>
@@ -141,7 +141,12 @@ function sortByPosition(items: ListItem[]): ListItem[] {
             [attr.aria-label]="config().pendingLabel + '. Arraste pela alça para reordenar.'"
           >
             @for (item of pendingItems(); track item.id) {
-              <app-card cdkDrag [cdkDragData]="item">
+              <app-card
+                cdkDrag
+                [cdkDragData]="item"
+                animate.enter="item-enter"
+                animate.leave="item-leave"
+              >
                 <article
                   class="item-card"
                   [class.item-card--place]="config().type === 'PLACE'"

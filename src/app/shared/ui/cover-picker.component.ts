@@ -118,9 +118,14 @@ type PickerMode = 'file' | 'url';
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
+        transition:
+          background-color var(--dur-fast) var(--ease-out),
+          color var(--dur-fast) var(--ease-out),
+          transform var(--dur-fast) var(--ease-ios);
       }
 
       .segmented button.segmented__option--active {
+        border: 1px solid var(--border);
         background: var(--surface);
         color: var(--text);
         box-shadow: var(--shadow);
@@ -130,6 +135,10 @@ type PickerMode = 'file' | 'url';
       .url-input:focus-visible {
         outline: 3px solid var(--accent);
         outline-offset: 2px;
+      }
+
+      .picker button:active {
+        transform: scale(0.98);
       }
 
       .picker__actions {
@@ -153,7 +162,7 @@ type PickerMode = 'file' | 'url';
       .text-button {
         min-height: 44px;
         padding: 0 16px;
-        border: 0;
+        border: 1px solid var(--border);
         border-radius: 999px;
         background: var(--fill);
         color: var(--text);
@@ -185,6 +194,10 @@ type PickerMode = 'file' | 'url';
         background: var(--fill);
         color: var(--text);
         font: inherit;
+        transition:
+          background-color var(--dur) ease,
+          color var(--dur) ease,
+          border-color var(--dur) ease;
       }
 
       .picker__error,
@@ -193,6 +206,15 @@ type PickerMode = 'file' | 'url';
         color: var(--text-secondary);
         font-size: 13px;
         line-height: 1.4;
+      }
+
+      .picker__error {
+        color: var(--danger);
+      }
+
+      .url-input::placeholder {
+        color: var(--text-secondary);
+        opacity: 1;
       }
 
       .preview {

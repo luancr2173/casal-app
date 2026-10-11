@@ -56,14 +56,18 @@ let nextInputId = 0;
         width: 100%;
         min-height: 52px;
         padding: 14px 16px;
-        border: 0;
+        border: 1px solid var(--border);
         border-radius: 12px;
         outline: 2px solid transparent;
         outline-offset: 2px;
         background: var(--fill);
         color: var(--text);
         font: inherit;
-        transition: outline-color 160ms ease;
+        transition:
+          outline-color var(--dur-fast) var(--ease-out),
+          background-color var(--dur) ease,
+          color var(--dur) ease,
+          border-color var(--dur) ease;
       }
 
       input:focus-visible {
@@ -72,13 +76,18 @@ let nextInputId = 0;
 
       input:disabled {
         cursor: not-allowed;
-        opacity: 0.6;
+        color: var(--text-secondary);
       }
 
       .field__error {
         margin: 0;
-        color: var(--text-secondary);
+        color: var(--danger);
         font-size: 12px;
+      }
+
+      input::placeholder {
+        color: var(--text-secondary);
+        opacity: 1;
       }
     `,
   ],

@@ -25,7 +25,20 @@ type ButtonType = 'button' | 'submit' | 'reset';
         font: inherit;
         font-weight: 600;
         cursor: pointer;
-        transition: background-color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+        transition:
+          background-color var(--dur-fast) var(--ease-out),
+          border-color var(--dur-fast) var(--ease-out),
+          color var(--dur-fast) var(--ease-out),
+          opacity var(--dur-fast) var(--ease-out),
+          transform var(--dur-fast) var(--ease-ios);
+      }
+
+      .button:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .button:active:not(:disabled) {
+        transform: scale(0.97);
       }
 
       .button:focus-visible {
@@ -52,6 +65,17 @@ type ButtonType = 'button' | 'submit' | 'reset';
       .button--ghost {
         background: transparent;
         color: var(--accent);
+      }
+
+      .button--primary:disabled,
+      .button--secondary:disabled {
+        border-color: var(--border);
+        background: var(--fill);
+        color: var(--text-secondary);
+      }
+
+      .button--ghost:disabled {
+        color: var(--text-secondary);
       }
     `,
   ],
