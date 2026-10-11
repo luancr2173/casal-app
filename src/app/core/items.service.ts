@@ -90,7 +90,11 @@ export class ItemsService {
 
   async update(
     id: string,
-    patch: { image_url?: string | null; metadata?: Record<string, unknown> },
+    patch: {
+      title?: string;
+      image_url?: string | null;
+      metadata?: Record<string, unknown>;
+    },
   ): Promise<ListItem> {
     const { data, error } = await this.supabase.client
       .from('list_items')

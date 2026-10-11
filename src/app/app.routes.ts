@@ -32,9 +32,8 @@ export const routes: Routes = [
   },
   {
     path: 'lugares',
-    component: PlaceholderPage,
+    loadComponent: () => import('./pages/places.page').then((page) => page.PlacesPage),
     canActivate: [authGuard, coupleGuard],
-    data: { title: 'Lugares', subtitle: 'Ideias de lugares para descobrir a dois.' },
   },
   {
     path: 'perfil',
