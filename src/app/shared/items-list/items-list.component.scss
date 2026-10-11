@@ -407,17 +407,63 @@
   }
 }
 
-@media (max-width: 520px) {
-  .item-card {
-    grid-template-columns: 44px 44px 60px minmax(0, 1fr) 44px;
-    gap: 5px;
+@media (max-width: 600px) {
+  app-card {
+    padding: 12px;
   }
 
-  .item-card--place {
-    grid-template-columns: 44px 44px 60px minmax(0, 1fr) 44px;
-  }
-
+  .item-card,
+  .item-card--place,
   .item-card--done {
-    grid-template-columns: 44px 60px minmax(0, 1fr) 44px;
+    grid-template-columns: 60px 44px 44px minmax(0, 1fr) 44px;
+    grid-template-rows: minmax(90px, auto) 44px;
+    gap: 6px;
+    min-height: 0;
+  }
+
+  .cover-action {
+    grid-column: 1;
+    grid-row: 1;
+    width: 60px;
+    height: 90px;
+  }
+
+  .cover-action app-cover {
+    width: 60px;
+  }
+
+  .item-card__details {
+    grid-column: 2 / 6;
+    grid-row: 1;
+    align-content: center;
+    gap: 3px;
+  }
+
+  .item-card__details p {
+    margin-top: 2px;
+  }
+
+  .drag-handle {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .status-check {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .remove-button {
+    grid-column: 5;
+    grid-row: 2;
+    align-self: center;
+  }
+
+  .item-card--done .status-check {
+    grid-column: 2;
+  }
+
+  .item-card--done .remove-button {
+    grid-column: 5;
   }
 }
