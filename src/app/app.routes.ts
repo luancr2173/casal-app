@@ -27,9 +27,8 @@ export const routes: Routes = [
   },
   {
     path: 'filmes',
-    component: PlaceholderPage,
+    loadComponent: () => import('./pages/movies.page').then((page) => page.MoviesPage),
     canActivate: [authGuard, coupleGuard],
-    data: { title: 'Filmes', subtitle: 'Escolham o próximo filme para assistir.' },
   },
   {
     path: 'lugares',

@@ -29,7 +29,12 @@ export interface ListItem {
   title: string;
   external_id: string | null;
   image_url: string | null;
-  metadata: Record<string, unknown>;
+  metadata: {
+    year?: number | null;
+    note?: string | null;
+    cover_path?: string | null;
+    [key: string]: unknown;
+  };
   position: number;
   status: ItemStatus;
   added_by: string | null;
