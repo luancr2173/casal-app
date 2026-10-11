@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs';
 import { TabBarComponent } from './shared/ui/tab-bar.component';
 
 @Component({
@@ -10,7 +12,9 @@ import { TabBarComponent } from './shared/ui/tab-bar.component';
     <main>
       <router-outlet />
     </main>
-    <app-tab-bar />
+    @if (showTabBar()) {
+      <app-tab-bar />
+    }
   `,
   styles: [
     `
@@ -22,4 +26,18 @@ import { TabBarComponent } from './shared/ui/tab-bar.component';
     `,
   ],
 })
-export class App {}
+export class App {
+  private readonly router = inject(Router);
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  protected readonly showTabBar = computed(() => {
+    const path = this.currentUrl().split(/[?#]/, 1)[0];
+    return !['/entrar', '/cadastro', '/espaco'].includes(path);
+  });
+}
