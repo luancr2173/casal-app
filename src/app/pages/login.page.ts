@@ -2,16 +2,25 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../core/auth.service';
+import { BrandLogoComponent } from '../shared/ui/brand-logo.component';
 import { ButtonComponent } from '../shared/ui/button.component';
 import { CardComponent } from '../shared/ui/card.component';
 import { InputComponent } from '../shared/ui/input.component';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, RouterLink, ButtonComponent, CardComponent, InputComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    BrandLogoComponent,
+    ButtonComponent,
+    CardComponent,
+    InputComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="auth-page">
+      <app-brand-logo />
       <h1>Que bom ter vocês aqui</h1>
       <p class="auth-page__intro">Entre para continuar construindo momentos juntos.</p>
       <app-card>

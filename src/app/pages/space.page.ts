@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CoupleService } from '../core/couple.service';
+import { BrandLogoComponent } from '../shared/ui/brand-logo.component';
 import { ButtonComponent } from '../shared/ui/button.component';
 import { CardComponent } from '../shared/ui/card.component';
 import { InputComponent } from '../shared/ui/input.component';
@@ -10,10 +11,17 @@ type SpaceAction = 'create' | 'join';
 
 @Component({
   selector: 'app-space-page',
-  imports: [ReactiveFormsModule, ButtonComponent, CardComponent, InputComponent],
+  imports: [
+    ReactiveFormsModule,
+    BrandLogoComponent,
+    ButtonComponent,
+    CardComponent,
+    InputComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="space-page">
+      <app-brand-logo />
       <h1>Um espaço só de vocês</h1>
       <p>Crie um espaço ou entre com o código de convite do seu par.</p>
       <div class="segmented" role="group" aria-label="Escolha como começar">
