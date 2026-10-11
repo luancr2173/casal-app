@@ -24,13 +24,13 @@ import { CoupleService } from '../../core/couple.service';
             [routerLinkActiveOptions]="{ exact: true }"
             ariaCurrentWhenActive="page"
           >
-            @if (tab.icon === 'profile' && couplePhotoUrl()) {
+            @if (tab.icon === 'profile' && couplePhotoUrl(); as photoUrl) {
               <img
                 class="tab-bar__avatar"
-                [src]="couplePhotoUrl()"
+                [src]="photoUrl"
                 alt=""
                 aria-hidden="true"
-                (error)="couplePhotoUrl.set(null)"
+                (error)="onCouplePhotoError(photoUrl)"
               />
             } @else {
               <svg
@@ -109,8 +109,9 @@ import { CoupleService } from '../../core/couple.service';
       }
 
       .tab-bar__avatar {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
+        flex: 0 0 auto;
         border: 1px solid var(--border);
         border-radius: 50%;
         object-fit: cover;
@@ -160,10 +161,12 @@ export class TabBarComponent {
       const path = this.couples.couple()?.photo_path;
       const request = ++this.photoRequest;
       this.couplePhotoUrl.set(null);
+
       if (this.renewalTimer) {
         clearInterval(this.renewalTimer);
         this.renewalTimer = null;
       }
+
       if (!path) {
         return;
       }
@@ -184,13 +187,20 @@ export class TabBarComponent {
   private async loadCouplePhoto(path: string, request: number): Promise<void> {
     try {
       const url = await this.couples.signedPhotoUrl(path);
-      if (request === this.photoRequest) {
-        this.couplePhotoUrl.set(url);
+      if (!this.destroyRef.destroyed && request === this.photoRequest) {
+        this.couplePhotoUrl.set(url || null);
       }
-    } catch {
-      if (request === this.photoRequest) {
+    } catch (error: unknown) {
+      if (!this.destroyRef.destroyed && request === this.photoRequest) {
         this.couplePhotoUrl.set(null);
+        console.error('Falha ao carregar a foto do casal na navegação.', error);
       }
+    }
+  }
+
+  protected onCouplePhotoError(url: string): void {
+    if (this.couplePhotoUrl() === url) {
+      this.couplePhotoUrl.set(null);
     }
   }
 }

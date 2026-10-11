@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   computed,
   effect,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/auth.service';
@@ -27,7 +29,14 @@ import { CardComponent } from '../shared/ui/card.component';
           <section class="couple-photo" aria-labelledby="couple-photo-title">
             <div class="couple-photo__preview">
               @if (photoUrl(); as photo) {
-                <img [src]="photo" alt="Foto do casal" />
+                <button
+                  class="couple-photo__image-button"
+                  type="button"
+                  aria-label="Visualizar foto do casal ampliada"
+                  (click)="openPhotoPreview()"
+                >
+                  <img [src]="photo" alt="Foto do casal" />
+                </button>
               } @else {
                 <svg
                   viewBox="0 0 24 24"
@@ -111,6 +120,27 @@ import { CardComponent } from '../shared/ui/card.component';
             </div>
           }
         </app-card>
+        <dialog
+          #photoDialog
+          class="couple-photo__dialog"
+          aria-labelledby="couple-photo-dialog-title"
+          (click)="closePhotoDialogFromBackdrop($event)"
+        >
+          @if (photoUrl(); as photo) {
+            <header>
+              <h2 id="couple-photo-dialog-title">Foto do casal</h2>
+              <button
+                class="couple-photo__dialog-close"
+                type="button"
+                aria-label="Fechar foto ampliada"
+                (click)="closePhotoPreview()"
+              >
+                ×
+              </button>
+            </header>
+            <img class="couple-photo__dialog-image" [src]="photo" alt="Foto do casal ampliada" />
+          }
+        </dialog>
       } @else {
         <p role="status" aria-live="polite">
           <span class="motion-spinner" aria-hidden="true"></span> Carregando perfil…
@@ -193,6 +223,92 @@ import { CardComponent } from '../shared/ui/card.component';
         width: 100%;
         height: 100%;
         object-fit: cover;
+      }
+
+      .couple-photo__image-button {
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        overflow: hidden;
+        border: 0;
+        border-radius: inherit;
+        background: transparent;
+        cursor: pointer;
+        transition: transform var(--dur-fast) var(--ease-ios);
+      }
+
+      .couple-photo__image-button:active {
+        transform: scale(0.96);
+      }
+
+      .couple-photo__image-button:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .couple-photo__dialog {
+        position: fixed;
+        width: min(calc(100% - 32px), 560px);
+        max-width: none;
+        max-height: min(90dvh, 700px);
+        padding: 16px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow);
+      }
+
+      .couple-photo__dialog::backdrop {
+        background: var(--scrim);
+      }
+
+      .couple-photo__dialog[open] {
+        animation: ui-message-enter var(--dur) var(--ease-out) both;
+      }
+
+      .couple-photo__dialog header {
+        display: flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .couple-photo__dialog h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .couple-photo__dialog-image {
+        display: block;
+        width: 100%;
+        max-height: min(65dvh, 560px);
+        border-radius: 14px;
+        object-fit: contain;
+      }
+
+      .couple-photo__dialog-close {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: var(--fill);
+        color: var(--text);
+        font: inherit;
+        font-size: 28px;
+        cursor: pointer;
+      }
+
+      .couple-photo__dialog-close:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
       }
 
       .couple-photo__preview svg {
@@ -350,6 +466,7 @@ export class ProfilePage {
   private readonly destroyRef = inject(DestroyRef);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly photoDialog = viewChild<ElementRef<HTMLDialogElement>>('photoDialog');
 
   readonly photoSaving = signal(false);
   readonly photoError = signal<string | null>(null);
@@ -411,6 +528,23 @@ export class ProfilePage {
       );
     } finally {
       this.photoSaving.set(false);
+    }
+  }
+
+  protected openPhotoPreview(): void {
+    const dialog = this.photoDialog()?.nativeElement;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+    }
+  }
+
+  protected closePhotoPreview(): void {
+    this.photoDialog()?.nativeElement.close();
+  }
+
+  protected closePhotoDialogFromBackdrop(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closePhotoPreview();
     }
   }
 
