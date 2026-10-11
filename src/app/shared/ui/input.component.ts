@@ -35,7 +35,12 @@ let nextInputId = 0;
         (blur)="handleBlur()"
       />
       @if (error(); as message) {
-        <p class="field__error" [id]="errorId" aria-live="polite">{{ message }}</p>
+        <p
+          class="field__error motion-message-enter"
+          [id]="errorId"
+          aria-live="polite"
+          animate.leave="message-exit"
+        >{{ message }}</p>
       }
     </div>
   `,
@@ -65,12 +70,13 @@ let nextInputId = 0;
         font: inherit;
         transition:
           outline-color var(--dur-fast) var(--ease-out),
+          border-color var(--dur-fast) var(--ease-out),
           background-color var(--dur) ease,
-          color var(--dur) ease,
-          border-color var(--dur) ease;
+          color var(--dur) ease;
       }
 
       input:focus-visible {
+        border-color: var(--accent);
         outline-color: var(--accent);
       }
 

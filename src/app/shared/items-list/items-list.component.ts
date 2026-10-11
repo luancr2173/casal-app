@@ -71,9 +71,16 @@ function sortByPosition(items: ListItem[]): ListItem[] {
             [formControl]="searchControl"
           />
           @if (searching()) {
-            <p role="status" aria-live="polite">Buscando…</p>
+            <p role="status" aria-live="polite">
+              <span class="motion-spinner" aria-hidden="true"></span> Buscando…
+            </p>
           } @else if (availableSearchResults().length) {
-            <div class="search-results" aria-live="polite" aria-label="Sugestões de filmes">
+            <div
+              class="search-results motion-message-enter"
+              aria-live="polite"
+              aria-label="Sugestões de filmes"
+              animate.leave="content-exit"
+            >
               <h2>Sugestões</h2>
               @for (result of availableSearchResults(); track searchResultKey(result)) {
                 <article class="search-result">
@@ -103,21 +110,43 @@ function sortByPosition(items: ListItem[]): ListItem[] {
             </div>
           } @else if (searchReady() && searchControl.value.trim().length >= 2) {
             @if (searchResults().length) {
-              <p class="search-feedback" role="status" aria-live="polite">
+              <p
+                class="search-feedback motion-message-enter"
+                role="status"
+                aria-live="polite"
+                animate.leave="message-exit"
+              >
                 Os títulos encontrados já estão na lista de vocês.
               </p>
             } @else {
-              <p class="search-feedback" role="status" aria-live="polite">
+              <p
+                class="search-feedback motion-message-enter"
+                role="status"
+                aria-live="polite"
+                animate.leave="message-exit"
+              >
                 Não encontramos sugestões. Você pode adicionar o filme manualmente.
               </p>
             }
-            <button class="manual-result" type="button" (click)="openAddSheet()">
+            <button
+              class="manual-result motion-message-enter"
+              type="button"
+              animate.leave="content-exit"
+              (click)="openAddSheet()"
+            >
               <span aria-hidden="true">＋</span>
               <span>Adicionar “{{ searchControl.value.trim() }}” manualmente</span>
             </button>
           }
           @if (searchError()) {
-            <p class="search-feedback" role="alert" aria-live="polite">{{ searchError() }}</p>
+            <p
+              class="search-feedback motion-message-enter"
+              role="alert"
+              aria-live="polite"
+              animate.leave="message-exit"
+            >
+              {{ searchError() }}
+            </p>
           }
         </div>
       } @else {
@@ -125,10 +154,22 @@ function sortByPosition(items: ListItem[]): ListItem[] {
       }
 
       @if (error()) {
-        <p class="message" role="alert" aria-live="polite" animate.enter="message-enter">{{ error() }}</p>
+        <p
+          class="message motion-message-enter"
+          role="alert"
+          aria-live="polite"
+          animate.leave="message-exit"
+        >{{ error() }}</p>
       }
       @if (covers.signingError()) {
-        <p class="message" role="alert" aria-live="polite" animate.enter="message-enter">{{ covers.signingError() }}</p>
+        <p
+          class="message motion-message-enter"
+          role="alert"
+          aria-live="polite"
+          animate.leave="message-exit"
+        >
+          {{ covers.signingError() }}
+        </p>
       }
 
       <section class="list-section" aria-labelledby="pending-title">
@@ -259,9 +300,10 @@ function sortByPosition(items: ListItem[]): ListItem[] {
                   </button>
                   @if (confirmRemoveId() === item.id) {
                     <div
-                      class="remove-confirm"
+                      class="remove-confirm motion-message-enter"
                       role="group"
                       [attr.aria-label]="'Confirmar remoção de ' + item.title"
+                      animate.leave="content-exit"
                       (click)="$event.stopPropagation()"
                     >
                       <span>Remover este item?</span>
@@ -274,7 +316,7 @@ function sortByPosition(items: ListItem[]): ListItem[] {
             }
           </div>
         } @else {
-          <app-card>
+          <app-card animate.enter="item-enter" animate.leave="item-leave">
             <div class="empty-state">
               <h3>{{ config().emptyTitle }}</h3>
               <p>{{ config().emptyText }}</p>
@@ -358,7 +400,11 @@ function sortByPosition(items: ListItem[]): ListItem[] {
                     <span aria-hidden="true">{{ confirmRemoveId() === item.id ? '×' : '…' }}</span>
                   </button>
                   @if (confirmRemoveId() === item.id) {
-                    <div class="remove-confirm" role="group">
+                    <div
+                      class="remove-confirm motion-message-enter"
+                      role="group"
+                      animate.leave="content-exit"
+                    >
                       <span>Remover este item?</span>
                       <button type="button" (click)="remove(item)">Remover</button>
                       <button type="button" (click)="toggleRemoveConfirmation(null)">Cancelar</button>
@@ -418,7 +464,14 @@ function sortByPosition(items: ListItem[]): ListItem[] {
           />
         }
         @if (formError()) {
-          <p class="message" role="alert" aria-live="polite">{{ formError() }}</p>
+          <p
+            class="message motion-message-enter"
+            role="alert"
+            aria-live="polite"
+            animate.leave="message-exit"
+          >
+            {{ formError() }}
+          </p>
         }
         <app-cover-picker
           [currentSrc]="editingItem() ? coverUrl(editingItem()!) : null"
@@ -427,9 +480,20 @@ function sortByPosition(items: ListItem[]): ListItem[] {
           (valid)="coverValid.set($event)"
         />
         @if (duplicateError()) {
-          <p class="message" role="alert" aria-live="polite">{{ duplicateError() }}</p>
+          <p
+            class="message motion-message-enter"
+            role="alert"
+            aria-live="polite"
+            animate.leave="message-exit"
+          >
+            {{ duplicateError() }}
+          </p>
         }
-        <app-button type="submit" [disabled]="saving() || !coverValid()">
+        <app-button
+          type="submit"
+          [disabled]="saving() || !coverValid()"
+          [loading]="saving()"
+        >
           {{ saving() ? 'Salvando…' : editingItem() ? 'Salvar alterações' : config().addButtonLabel }}
         </app-button>
       </form>
@@ -444,7 +508,11 @@ function sortByPosition(items: ListItem[]): ListItem[] {
             (changed)="coverEditSelection.set($event)"
             (valid)="coverEditValid.set($event)"
           />
-          <app-button [disabled]="saving() || !coverEditValid()" (click)="saveCoverEdit(item)">
+          <app-button
+            [disabled]="saving() || !coverEditValid()"
+            [loading]="saving()"
+            (click)="saveCoverEdit(item)"
+          >
             {{ saving() ? 'Salvando…' : 'Salvar capa' }}
           </app-button>
         </div>

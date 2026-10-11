@@ -72,14 +72,20 @@ type PickerMode = 'file' | 'url';
           (input)="changeUrl($event)"
         />
         @if (error()) {
-          <p id="cover-picker-error" class="picker__error" role="alert" aria-live="polite">
+          <p
+            id="cover-picker-error"
+            class="picker__error motion-message-enter"
+            role="alert"
+            aria-live="polite"
+            animate.leave="message-exit"
+          >
             {{ error() }}
           </p>
         }
       }
 
       @if (previewSrc()) {
-        <div class="preview">
+        <div class="preview motion-message-enter">
           <app-cover title="Prévia da capa" [src]="previewSrc()" size="small" />
           <span>Prévia da capa</span>
         </div>
@@ -87,7 +93,9 @@ type PickerMode = 'file' | 'url';
         <p class="picker__hint">A capa é opcional. Você pode adicioná-la ou removê-la depois.</p>
       }
       @if (processing()) {
-        <p class="picker__hint" role="status" aria-live="polite">Preparando imagem…</p>
+        <p class="picker__hint" role="status" aria-live="polite">
+          <span class="motion-spinner" aria-hidden="true"></span> Preparando imagem…
+        </p>
       }
     </div>
   `,
@@ -107,38 +115,30 @@ type PickerMode = 'file' | 'url';
         background: var(--fill);
       }
 
-      .segmented button {
-        min-height: 44px;
-        padding: 8px;
-        border: 0;
-        border-radius: 11px;
-        background: transparent;
-        color: var(--text-secondary);
-        font: inherit;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition:
-          background-color var(--dur-fast) var(--ease-out),
-          color var(--dur-fast) var(--ease-out),
-          transform var(--dur-fast) var(--ease-ios);
-      }
-
-      .segmented button.segmented__option--active {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text);
-        box-shadow: var(--shadow);
-      }
-
       .picker button:focus-visible,
       .url-input:focus-visible {
         outline: 3px solid var(--accent);
         outline-offset: 2px;
       }
 
-      .picker button:active {
+      .action-button,
+      .text-button {
+        transition:
+          background-color var(--dur-fast) var(--ease-out),
+          color var(--dur-fast) var(--ease-out),
+          border-color var(--dur-fast) var(--ease-out),
+          transform var(--dur-fast) var(--ease-ios);
+      }
+
+      .picker button:active:not(:disabled) {
         transform: scale(0.98);
+      }
+
+      @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .action-button:hover,
+        .text-button:hover {
+          transform: translateY(-1px);
+        }
       }
 
       .picker__actions {
@@ -197,7 +197,8 @@ type PickerMode = 'file' | 'url';
         transition:
           background-color var(--dur) ease,
           color var(--dur) ease,
-          border-color var(--dur) ease;
+          border-color var(--dur-fast) var(--ease-out),
+          outline-color var(--dur-fast) var(--ease-out);
       }
 
       .picker__error,

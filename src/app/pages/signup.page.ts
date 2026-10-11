@@ -49,12 +49,26 @@ import { InputComponent } from '../shared/ui/input.component';
             [error]="passwordError()"
           />
           @if (error()) {
-            <p class="form-message" role="alert" aria-live="polite">{{ error() }}</p>
+            <p
+              class="form-message motion-message-enter"
+              role="alert"
+              aria-live="polite"
+              animate.leave="message-exit"
+            >
+              {{ error() }}
+            </p>
           }
           @if (confirmation()) {
-            <p class="form-message" role="status" aria-live="polite">{{ confirmation() }}</p>
+            <p
+              class="form-message motion-message-enter"
+              role="status"
+              aria-live="polite"
+              animate.leave="message-exit"
+            >
+              {{ confirmation() }}
+            </p>
           }
-          <app-button type="submit" [disabled]="loading()">
+          <app-button type="submit" [disabled]="loading()" [loading]="loading()">
             {{ loading() ? 'Criando…' : 'Criar conta' }}
           </app-button>
         </form>
@@ -83,12 +97,6 @@ import { InputComponent } from '../shared/ui/input.component';
         gap: 20px;
       }
 
-      .form-message {
-        margin: 0;
-        color: var(--danger);
-        animation: auth-message-in var(--dur) var(--ease-out) both;
-      }
-
       a {
         color: var(--accent);
         font-weight: 600;
@@ -100,15 +108,9 @@ import { InputComponent } from '../shared/ui/input.component';
         outline-offset: 3px;
       }
 
-      @keyframes auth-message-in {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      .form-message {
+        margin: 0;
+        color: var(--danger);
       }
     `,
   ],

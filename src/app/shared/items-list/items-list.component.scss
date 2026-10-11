@@ -26,7 +26,6 @@
 .message {
   margin: 0;
   color: var(--danger);
-  animation: message-enter var(--dur) var(--ease-out) both;
 }
 
 .manual-result {
@@ -45,9 +44,30 @@
   transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-ios);
 }
 
+.manual-result:active {
+  transform: scale(0.99);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .manual-result:hover {
+    transform: translateY(-1px);
+  }
+}
+
 .remove-confirm button:active,
 .item-links a:active {
   transform: scale(0.98);
+}
+
+.icon-button {
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-ios);
+}
+
+.icon-button:active {
+  transform: scale(0.94);
 }
 
 .search-result,
@@ -209,6 +229,23 @@
 .item-card--place {
   grid-template-columns: 44px 44px 72px minmax(0, 1fr) 44px;
   cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-ios);
+}
+
+.item-card--place:focus-visible {
+  border-radius: 8px;
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.item-card--place:active {
+  transform: scale(0.995);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .item-card--place:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .item-card__details h3,
@@ -371,33 +408,6 @@
   background: var(--fill);
 }
 
-.segmented button {
-  min-height: 44px;
-  padding: 6px;
-  border: 0;
-  border-radius: 11px;
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-ios);
-}
-
-.segmented button.segmented__option--active {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow);
-}
-
-.segmented button:active {
-  transform: scale(0.98);
-}
-
 .cdk-drag-placeholder {
   opacity: 0.25;
   transition: opacity var(--dur) var(--ease-out);
@@ -446,17 +456,6 @@
   to {
     opacity: 0;
     transform: translateY(-4px) scale(0.98);
-  }
-}
-
-@keyframes message-enter {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 

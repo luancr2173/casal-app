@@ -89,6 +89,66 @@ p {
   backdrop-filter: blur(20px);
 }
 
+.segmented button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-ios),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.segmented button.segmented__option--active {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.segmented button:active {
+  transform: scale(0.98);
+}
+
+.segmented button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.motion-message-enter {
+  animation: ui-message-enter var(--dur) var(--ease-out) both;
+}
+
+.motion-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.12em;
+  animation: ui-spinner 700ms linear infinite;
+}
+
+.content-exit {
+  animation: ui-content-exit var(--dur-fast) var(--ease-out) both;
+}
+
+.message-exit {
+  animation: ui-message-exit var(--dur-fast) var(--ease-out) both;
+}
+
 .theme-switching body,
 .theme-switching app-card,
 .theme-switching app-button button,
@@ -133,6 +193,37 @@ p {
   }
 }
 
+@keyframes ui-message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ui-content-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+}
+
+@keyframes ui-message-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes ui-spinner {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --dur-fast: 1ms;
@@ -160,6 +251,11 @@ p {
 
   .button:hover:not(:disabled),
   .button:active:not(:disabled),
+  .manual-result:active,
+  .icon-button:active,
+  .item-card--place:active,
+  .picker button:active,
+  .sheet__close:active,
   .segmented button:active,
   .status-check:active,
   .remove-confirm button:active,
@@ -170,6 +266,16 @@ p {
 
   .cdk-drag-preview {
     scale: 1;
+  }
+
+  .motion-spinner {
+    animation: none !important;
+    border-right-color: currentColor;
+  }
+
+  .button__spinner {
+    animation: none !important;
+    border-right-color: currentColor;
   }
 
   app-sheet .sheet-panel,

@@ -11,14 +11,23 @@ type ButtonType = 'button' | 'submit' | 'reset';
       [class]="'button button--' + variant()"
       [type]="type()"
       [disabled]="disabled()"
+      [attr.aria-busy]="loading() ? 'true' : null"
     >
-      <ng-content />
+      <span class="button__label"><ng-content /></span>
+      @if (loading()) {
+        <span class="button__spinner" aria-hidden="true"></span>
+      }
     </button>
   `,
   styles: [
     `
       .button {
+        display: inline-flex;
+        min-width: 44px;
         min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
         padding: 11px 20px;
         border: 1px solid transparent;
         border-radius: 980px;
@@ -33,12 +42,28 @@ type ButtonType = 'button' | 'submit' | 'reset';
           transform var(--dur-fast) var(--ease-ios);
       }
 
-      .button:hover:not(:disabled) {
-        transform: translateY(-1px);
+      .button__label {
+        min-width: 0;
       }
 
       .button:active:not(:disabled) {
         transform: scale(0.97);
+      }
+
+      .button__spinner {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: ui-spinner 700ms linear infinite;
+      }
+
+      @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .button:hover:not(:disabled) {
+          transform: translateY(-1px);
+        }
       }
 
       .button:focus-visible {
@@ -84,4 +109,5 @@ export class ButtonComponent {
   readonly variant = input<ButtonVariant>('primary');
   readonly type = input<ButtonType>('button');
   readonly disabled = input(false);
+  readonly loading = input(false);
 }

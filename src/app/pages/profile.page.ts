@@ -40,10 +40,19 @@ import { CardComponent } from '../shared/ui/card.component';
           }
         </app-card>
       } @else {
-        <p role="status" aria-live="polite">Carregando perfil…</p>
+        <p role="status" aria-live="polite">
+          <span class="motion-spinner" aria-hidden="true"></span> Carregando perfil…
+        </p>
       }
       @if (error()) {
-        <p class="profile-error" role="alert" aria-live="polite">{{ error() }}</p>
+        <p
+          class="profile-error motion-message-enter"
+          role="alert"
+          aria-live="polite"
+          animate.leave="message-exit"
+        >
+          {{ error() }}
+        </p>
       }
       <app-card>
         <section class="appearance" aria-labelledby="appearance-title">
@@ -68,7 +77,12 @@ import { CardComponent } from '../shared/ui/card.component';
           </div>
         </section>
       </app-card>
-      <app-button variant="secondary" [disabled]="loading()" (click)="signOut()">
+      <app-button
+        variant="secondary"
+        [disabled]="loading()"
+        [loading]="loading()"
+        (click)="signOut()"
+      >
         {{ loading() ? 'Saindo…' : 'Sair' }}
       </app-button>
     </section>
@@ -142,52 +156,9 @@ import { CardComponent } from '../shared/ui/card.component';
         background: var(--fill);
       }
 
-      .segmented button {
-        min-height: 44px;
-        padding: 8px;
-        border: 0;
-        border-radius: 11px;
-        background: transparent;
-        color: var(--text-secondary);
-        font: inherit;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition:
-          background-color var(--dur-fast) var(--ease-out),
-          color var(--dur-fast) var(--ease-out),
-          transform var(--dur-fast) var(--ease-ios);
-      }
-
-      .segmented button.segmented__option--active {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text);
-        box-shadow: var(--shadow);
-      }
-
-      .segmented button:focus-visible {
-        position: relative;
-        z-index: 1;
-        outline: 3px solid var(--accent);
-        outline-offset: 2px;
-      }
-
       .profile-error {
         margin: 0;
         color: var(--danger);
-        animation: profile-message-in var(--dur) var(--ease-out) both;
-      }
-
-      @keyframes profile-message-in {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
     `,
   ],

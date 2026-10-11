@@ -44,7 +44,10 @@ type SpaceAction = 'create' | 'join';
       </div>
 
       @if (createdCouple(); as created) {
-        <app-card>
+        <app-card
+          class="motion-message-enter"
+          animate.leave="content-exit"
+        >
           <div class="invite">
             <h2>Espaço criado</h2>
             <p>Compartilhe este código com seu par:</p>
@@ -56,7 +59,10 @@ type SpaceAction = 'create' | 'join';
           </div>
         </app-card>
       } @else if (action() === 'create') {
-        <app-card>
+        <app-card
+          class="motion-message-enter"
+          animate.leave="content-exit"
+        >
           <form [formGroup]="createForm" (ngSubmit)="create()" novalidate>
             <app-input
               label="Nome do casal (opcional)"
@@ -64,15 +70,25 @@ type SpaceAction = 'create' | 'join';
               formControlName="name"
             />
             @if (error()) {
-              <p class="form-message" role="alert" aria-live="polite">{{ error() }}</p>
+              <p
+                class="form-message motion-message-enter"
+                role="alert"
+                aria-live="polite"
+                animate.leave="message-exit"
+              >
+                {{ error() }}
+              </p>
             }
-            <app-button type="submit" [disabled]="loading()">
+            <app-button type="submit" [disabled]="loading()" [loading]="loading()">
               {{ loading() ? 'Criando…' : 'Criar' }}
             </app-button>
           </form>
         </app-card>
       } @else {
-        <app-card>
+        <app-card
+          class="motion-message-enter"
+          animate.leave="content-exit"
+        >
           <form [formGroup]="joinForm" (ngSubmit)="join()" novalidate>
             <app-input
               label="Código de convite"
@@ -83,9 +99,16 @@ type SpaceAction = 'create' | 'join';
               (input)="normalizeCode()"
             />
             @if (error()) {
-              <p class="form-message" role="alert" aria-live="polite">{{ error() }}</p>
+              <p
+                class="form-message motion-message-enter"
+                role="alert"
+                aria-live="polite"
+                animate.leave="message-exit"
+              >
+                {{ error() }}
+              </p>
             }
-            <app-button type="submit" [disabled]="loading()">
+            <app-button type="submit" [disabled]="loading()" [loading]="loading()">
               {{ loading() ? 'Entrando…' : 'Entrar' }}
             </app-button>
           </form>
@@ -115,39 +138,6 @@ type SpaceAction = 'create' | 'join';
         background: var(--fill);
       }
 
-      .segmented button {
-        min-height: 44px;
-        padding: 8px 12px;
-        border: 0;
-        border-radius: 11px;
-        background: transparent;
-        color: var(--text-secondary);
-        font: inherit;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition:
-          background-color var(--dur-fast) var(--ease-out),
-          color var(--dur-fast) var(--ease-out),
-          transform var(--dur-fast) var(--ease-ios);
-      }
-
-      .segmented button.segmented__option--active {
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text);
-        box-shadow: var(--shadow);
-      }
-
-      .segmented button:focus-visible {
-        outline: 3px solid var(--accent);
-        outline-offset: 2px;
-      }
-
-      .segmented button:active {
-        transform: scale(0.98);
-      }
-
       form,
       .invite {
         display: grid;
@@ -171,18 +161,6 @@ type SpaceAction = 'create' | 'join';
       .form-message {
         margin: 0;
         color: var(--danger);
-        animation: auth-message-in var(--dur) var(--ease-out) both;
-      }
-
-      @keyframes auth-message-in {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
     `,
   ],
