@@ -48,6 +48,7 @@ export class CoupleService {
   readonly couple = signal<Couple | null>(null);
   readonly partner = signal<Partner | null>(null);
   readonly loaded = signal(false);
+  readonly photoSchemaAvailable = signal(true);
 
   constructor() {
     effect(() => {
@@ -123,7 +124,7 @@ export class CoupleService {
         await Promise.all([
           this.supabase.client
             .from('couples')
-            .select('id, name, invite_code, created_at')
+            .select('*')
             .eq('id', profile.couple_id)
             .maybeSingle(),
           this.supabase.client
@@ -136,6 +137,10 @@ export class CoupleService {
 
       if (coupleError) {
         throw coupleError;
+      } else {
+        this.photoSchemaAvailable.set(
+          couple !== null && Object.prototype.hasOwnProperty.call(couple, 'photo_path'),
+        );
       }
 
       if (partnerError) {
@@ -206,10 +211,23 @@ export class CoupleService {
     await this.load();
   }
 
+  async setPhotoPath(photoPath: string | null): Promise<void> {
+    const { error } = await this.supabase.client.rpc('set_couple_photo', {
+      p_photo_path: photoPath,
+    });
+
+    if (error) {
+      throw new Error('Não foi possível salvar a foto do casal. Tente novamente.');
+    }
+
+    this.couple.update((current) => (current ? { ...current, photo_path: photoPath } : current));
+  }
+
   private clearState(): void {
     this.profile.set(null);
     this.couple.set(null);
     this.partner.set(null);
+    this.photoSchemaAvailable.set(true);
   }
 
   private invalidateLoadedState(): void {

@@ -185,9 +185,13 @@ export class CoverService {
   urlFor(item: ListItem): string | null {
     const path = item.metadata.cover_path;
     if (typeof path === 'string' && path) {
-      return this.signedUrls()[path]?.url ?? null;
+      return this.urlForPath(path);
     }
     return item.image_url;
+  }
+
+  urlForPath(path: string): string | null {
+    return this.signedUrls()[path]?.url ?? null;
   }
 
   stopRenewal(): void {

@@ -14,6 +14,7 @@ export interface Couple {
   name: string | null;
   invite_code: string;
   created_at: string;
+  photo_path?: string | null;
 }
 
 export interface Profile {

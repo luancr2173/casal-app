@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/auth.service';
 import { CoupleService } from '../core/couple.service';
+import { CoverService } from '../core/cover.service';
 import { ThemeService, type ThemeMode } from '../core/theme.service';
 import { ButtonComponent } from '../shared/ui/button.component';
 import { CardComponent } from '../shared/ui/card.component';
@@ -15,6 +24,69 @@ import { CardComponent } from '../shared/ui/card.component';
       <h1>Perfil</h1>
       @if (couples.loaded()) {
         <app-card>
+          <section class="couple-photo" aria-labelledby="couple-photo-title">
+            <div class="couple-photo__preview">
+              @if (photoUrl(); as photo) {
+                <img [src]="photo" alt="Foto do casal" />
+              } @else {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+                </svg>
+              }
+            </div>
+            <div class="couple-photo__details">
+              <h2 id="couple-photo-title">Foto do casal</h2>
+              <p>Escolha uma imagem para representar vocês.</p>
+              @if (couples.photoSchemaAvailable()) {
+                <label class="photo-upload">
+                  <span>{{ photoSaving() ? 'Enviando foto…' : 'Enviar foto' }}</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    aria-label="Enviar foto do casal"
+                    aria-describedby="photo-upload-help"
+                    [disabled]="photoSaving()"
+                    (change)="uploadPhoto($event)"
+                  />
+                </label>
+              } @else {
+                <span class="photo-upload__pending">
+                  Aplique a migração do Supabase para habilitar o envio.
+                </span>
+              }
+              <span id="photo-upload-help" class="photo-upload__help">
+                JPG, PNG ou WebP. Até 10 MB.
+              </span>
+            </div>
+          </section>
+          @if (photoSaving()) {
+            <p class="photo-loading" role="status" aria-live="polite">
+              <span class="motion-spinner" aria-hidden="true"></span> Enviando e salvando a foto…
+            </p>
+          }
+          @if (photoError()) {
+            <p
+              class="profile-error motion-message-enter"
+              role="alert"
+              aria-live="polite"
+              animate.leave="message-exit"
+            >
+              {{ photoError() }}
+            </p>
+          }
+          @if (couples.couple()?.photo_path && !photoUrl() && !photoError()) {
+            <p class="photo-loading" role="status" aria-live="polite">
+              <span class="motion-spinner" aria-hidden="true"></span> Carregando foto…
+            </p>
+          }
           <dl>
             <div>
               <dt>Seu nome</dt>
@@ -95,6 +167,114 @@ import { CardComponent } from '../shared/ui/card.component';
         padding-top: 32px;
       }
 
+      .couple-photo {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .couple-photo__preview {
+        display: grid;
+        width: 96px;
+        height: 96px;
+        flex: 0 0 auto;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        background: var(--fill);
+        color: var(--text-secondary);
+      }
+
+      .couple-photo__preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .couple-photo__preview svg {
+        width: 36px;
+        height: 36px;
+      }
+
+      .couple-photo__details {
+        display: grid;
+        min-width: 0;
+        justify-items: start;
+        gap: 7px;
+      }
+
+      .couple-photo__details h2 {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .couple-photo__details p,
+      .photo-upload__help {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .photo-upload__pending {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .photo-upload {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px;
+        border: 1px solid var(--border);
+        border-radius: 980px;
+        background: var(--fill);
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background-color var(--dur-fast) var(--ease-out),
+          color var(--dur-fast) var(--ease-out),
+          transform var(--dur-fast) var(--ease-ios);
+      }
+
+      .photo-upload:active {
+        transform: scale(0.98);
+      }
+
+      .photo-upload:focus-within {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .photo-upload input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      .photo-upload:has(input:disabled) {
+        cursor: wait;
+        opacity: 0.65;
+      }
+
+      .photo-loading {
+        margin: -12px 0 20px;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+
       dl {
         display: grid;
         gap: 20px;
@@ -166,9 +346,17 @@ import { CardComponent } from '../shared/ui/card.component';
 export class ProfilePage {
   readonly couples = inject(CoupleService);
   readonly theme = inject(ThemeService);
+  private readonly covers = inject(CoverService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  readonly photoSaving = signal(false);
+  readonly photoError = signal<string | null>(null);
+  readonly photoUrl = computed(() => {
+    const path = this.couples.couple()?.photo_path;
+    return path ? this.covers.urlForPath(path) : null;
+  });
   readonly copied = signal(false);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -177,6 +365,54 @@ export class ProfilePage {
     { value: 'light', label: 'Claro' },
     { value: 'dark', label: 'Escuro' },
   ];
+
+  constructor() {
+    effect(() => {
+      const path = this.couples.couple()?.photo_path;
+      if (path) {
+        void this.covers.prime([path]).catch((error: unknown) => {
+          this.photoError.set(
+            error instanceof Error
+              ? error.message
+              : 'Não foi possível carregar a foto do casal.',
+          );
+        });
+      }
+    });
+    this.destroyRef.onDestroy(() => this.covers.stopRenewal());
+  }
+
+  async uploadPhoto(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    this.photoError.set(null);
+    this.photoSaving.set(true);
+    let uploadedPath: string | null = null;
+    const previousPath = this.couples.couple()?.photo_path;
+    try {
+      const image = await this.covers.processImage(file);
+      uploadedPath = await this.covers.upload(image);
+      await this.couples.setPhotoPath(uploadedPath);
+      uploadedPath = null;
+      if (previousPath && previousPath !== this.couples.couple()?.photo_path) {
+        await this.covers.remove(previousPath);
+      }
+    } catch (error: unknown) {
+      if (uploadedPath) {
+        await this.covers.remove(uploadedPath);
+      }
+      this.photoError.set(
+        error instanceof Error ? error.message : 'Não foi possível enviar a foto do casal.',
+      );
+    } finally {
+      this.photoSaving.set(false);
+    }
+  }
 
   protected onThemeKeydown(event: KeyboardEvent, index: number): void {
     let nextIndex: number;
