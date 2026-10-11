@@ -21,6 +21,7 @@ export class CoverService {
   private activePaths: string[] = [];
   private renewalTimer: ReturnType<typeof setInterval> | null = null;
   private readonly inFlight = new Set<string>();
+  private readonly signedUrlRequests = new Map<string, Promise<string>>();
 
   readonly signedUrls = signal<Record<string, SignedCover>>({});
   readonly signingError = signal<string | null>(null);
@@ -192,6 +193,43 @@ export class CoverService {
 
   urlForPath(path: string): string | null {
     return this.signedUrls()[path]?.url ?? null;
+  }
+
+  async signedUrlForPath(path: string): Promise<string> {
+    const cached = this.signedUrls()[path];
+    if (cached && cached.expiresAt - Date.now() > refreshMarginMs) {
+      return cached.url;
+    }
+
+    const activeRequest = this.signedUrlRequests.get(path);
+    if (activeRequest) {
+      return activeRequest;
+    }
+
+    const request = (async () => {
+      const { data, error } = await this.supabase.client.storage
+        .from('covers')
+        .createSignedUrl(path, signedUrlLifetimeSeconds);
+      if (error || !data?.signedUrl) {
+        throw new Error('Não foi possível carregar a foto do casal.');
+      }
+
+      this.signedUrls.update((current) => ({
+        ...current,
+        [path]: {
+          url: data.signedUrl,
+          expiresAt: Date.now() + signedUrlLifetimeSeconds * 1000,
+        },
+      }));
+      return data.signedUrl;
+    })();
+
+    this.signedUrlRequests.set(path, request);
+    try {
+      return await request;
+    } finally {
+      this.signedUrlRequests.delete(path);
+    }
   }
 
   stopRenewal(): void {

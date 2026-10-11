@@ -223,6 +223,18 @@ export class CoupleService {
     this.couple.update((current) => (current ? { ...current, photo_path: photoPath } : current));
   }
 
+  async signedPhotoUrl(path: string): Promise<string> {
+    const { data, error } = await this.supabase.client.storage
+      .from('covers')
+      .createSignedUrl(path, 60 * 60);
+
+    if (error || !data?.signedUrl) {
+      throw new Error('Não foi possível carregar a foto do casal.');
+    }
+
+    return data.signedUrl;
+  }
+
   private clearState(): void {
     this.profile.set(null);
     this.couple.set(null);
