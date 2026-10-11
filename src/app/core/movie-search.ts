@@ -6,6 +6,8 @@ export type SearchResult = {
   year: number | null;
   overview: string;
   image_url: string | null;
+  genres?: string[];
+  related?: SearchResult[];
 };
 
 export interface MovieSearchProvider {

@@ -72,15 +72,22 @@ function sortByPosition(items: ListItem[]): ListItem[] {
           />
           @if (searching()) {
             <p role="status" aria-live="polite">Buscando…</p>
-          } @else if (searchResults().length) {
-            <div class="search-results" aria-label="Resultados da busca">
-              @for (result of searchResults(); track result.external_id ?? result.title) {
+          } @else if (availableSearchResults().length) {
+            <div class="search-results" aria-live="polite" aria-label="Sugestões de filmes">
+              <h2>Sugestões</h2>
+              @for (result of availableSearchResults(); track searchResultKey(result)) {
                 <article class="search-result">
                   <app-cover [title]="result.title" [src]="result.image_url" size="small" />
                   <div class="search-result__details">
                     <strong>{{ result.title }}</strong>
                     @if (result.year) {
                       <span>{{ result.year }}</span>
+                    }
+                    @if (result.genres?.length) {
+                      <span>{{ result.genres?.join(' · ') }}</span>
+                    }
+                    @if (result.overview) {
+                      <p>{{ result.overview }}</p>
                     }
                   </div>
                   <button
@@ -95,10 +102,22 @@ function sortByPosition(items: ListItem[]): ListItem[] {
               }
             </div>
           } @else if (searchReady() && searchControl.value.trim().length >= 2) {
+            @if (searchResults().length) {
+              <p class="search-feedback" role="status" aria-live="polite">
+                Os títulos encontrados já estão na lista de vocês.
+              </p>
+            } @else {
+              <p class="search-feedback" role="status" aria-live="polite">
+                Não encontramos sugestões. Você pode adicionar o filme manualmente.
+              </p>
+            }
             <button class="manual-result" type="button" (click)="openAddSheet()">
               <span aria-hidden="true">＋</span>
-              <span>Adicionar “{{ searchControl.value.trim() }}”</span>
+              <span>Adicionar “{{ searchControl.value.trim() }}” manualmente</span>
             </button>
+          }
+          @if (searchError()) {
+            <p class="search-feedback" role="alert" aria-live="polite">{{ searchError() }}</p>
           }
         </div>
       } @else {
@@ -212,6 +231,23 @@ function sortByPosition(items: ListItem[]): ListItem[] {
                         >Ver no mapa</a>
                       </div>
                     }
+                    @if (config().type === 'MOVIE' && trailerVideoId(item); as videoId) {
+                      <a
+                        class="trailer-preview"
+                        [href]="trailerUrl(item)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [attr.aria-label]="'Assistir trailer de ' + item.title + ' no YouTube'"
+                      >
+                        <img
+                          [src]="trailerThumbnail(videoId)"
+                          [alt]="'Prévia do trailer de ' + item.title"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <span><span aria-hidden="true">▶</span> Assistir trailer</span>
+                      </a>
+                    }
                   </div>
                   <button
                     class="icon-button remove-button"
@@ -295,6 +331,23 @@ function sortByPosition(items: ListItem[]): ListItem[] {
                         <a [href]="mapUrl(item)" target="_blank" rel="noopener noreferrer">Ver no mapa</a>
                       </div>
                     }
+                    @if (config().type === 'MOVIE' && trailerVideoId(item); as videoId) {
+                      <a
+                        class="trailer-preview"
+                        [href]="trailerUrl(item)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [attr.aria-label]="'Assistir trailer de ' + item.title + ' no YouTube'"
+                      >
+                        <img
+                          [src]="trailerThumbnail(videoId)"
+                          [alt]="'Prévia do trailer de ' + item.title"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <span><span aria-hidden="true">▶</span> Assistir trailer</span>
+                      </a>
+                    }
                   </div>
                   <button
                     class="icon-button remove-button"
@@ -353,6 +406,17 @@ function sortByPosition(items: ListItem[]): ListItem[] {
             />
           }
         }
+        @if (config().type === 'MOVIE') {
+          <app-input
+            label="Trailer do YouTube (opcional)"
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            autocomplete="url"
+            [formControl]="trailerControl"
+            [error]="trailerError()"
+            (input)="trailerError.set(null)"
+          />
+        }
         @if (formError()) {
           <p class="message" role="alert" aria-live="polite">{{ formError() }}</p>
         }
@@ -405,12 +469,15 @@ export class ItemsListComponent {
   readonly config = input.required<ItemListConfig>();
   readonly covers = this.coversService;
   readonly searchControl = new FormControl('', { nonNullable: true });
+  readonly trailerControl = new FormControl('', { nonNullable: true });
   readonly items = signal<ListItem[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly reordering = signal(false);
   readonly error = signal<string | null>(null);
+  readonly searchError = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
+  readonly trailerError = signal<string | null>(null);
   readonly duplicateError = signal<string | null>(null);
   readonly searching = signal(false);
   readonly searchReady = signal(false);
@@ -435,6 +502,20 @@ export class ItemsListComponent {
       .sort((a, b) => (b.done_at ?? '').localeCompare(a.done_at ?? '')),
   );
   readonly form = new FormRecord<FormControl<string>>({});
+  readonly availableSearchResults = computed(() => {
+    const existing = this.items();
+    const seen = new Set<string>();
+    return this.searchResults()
+      .flatMap((result) => [result, ...(result.related ?? [])])
+      .filter((result) => {
+        const key = this.searchResultKey(result);
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return !existing.some((item) => this.isSameSearchMovie(item, result));
+      });
+  });
 
   constructor() {
     effect(() => {
@@ -508,6 +589,7 @@ export class ItemsListComponent {
       values[this.config().titleField] = this.searchControl.value.trim();
     }
     this.form.reset(values);
+    this.trailerControl.reset('');
     this.resetPicker();
     this.clearFormErrors();
     this.formSheetOpen.set(true);
@@ -516,6 +598,11 @@ export class ItemsListComponent {
   openEdit(item: ListItem): void {
     this.editingItem.set(item);
     this.form.reset(this.config().readFormValues(item));
+    this.trailerControl.reset(
+      typeof item.metadata['trailer_url'] === 'string'
+        ? item.metadata['trailer_url']
+        : '',
+    );
     this.selectedCover.set(undefined);
     this.coverValid.set(true);
     this.pickerReset.update((value) => value + 1);
@@ -532,6 +619,8 @@ export class ItemsListComponent {
   closeFormSheet(): void {
     this.formSheetOpen.set(false);
     this.editingItem.set(null);
+    this.trailerControl.reset('');
+    this.trailerError.set(null);
     this.resetPicker();
     this.clearFormErrors();
   }
@@ -561,6 +650,7 @@ export class ItemsListComponent {
 
   async saveForm(): Promise<void> {
     this.clearFormErrors();
+    this.trailerError.set(null);
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       return;
@@ -581,6 +671,13 @@ export class ItemsListComponent {
     }
 
     const title = values[this.config().titleField]?.trim() ?? '';
+    const rawTrailer = this.config().type === 'MOVIE' ? this.trailerControl.value.trim() : '';
+    const trailerUrl = rawTrailer ? this.normalizeTrailerUrl(rawTrailer) : null;
+    if (rawTrailer && !trailerUrl) {
+      this.trailerError.set('Informe um link válido de trailer do YouTube.');
+      return;
+    }
+
     const duplicateItems = this.items().filter((item) => item.id !== this.editingItem()?.id);
     if (this.config().isDuplicate(title, values, duplicateItems)) {
       this.duplicateError.set('Esse item já está na lista de vocês.');
@@ -600,6 +697,13 @@ export class ItemsListComponent {
       const metadata = editing
         ? { ...editing.metadata, ...builtMetadata }
         : builtMetadata;
+      if (this.config().type === 'MOVIE') {
+        if (trailerUrl) {
+          metadata['trailer_url'] = trailerUrl;
+        } else {
+          delete metadata['trailer_url'];
+        }
+      }
       if (selection?.kind === 'file' && uploadedPath) {
         metadata['cover_path'] = uploadedPath;
       } else if (selection !== undefined) {
@@ -657,19 +761,30 @@ export class ItemsListComponent {
 
   async addSearchResult(result: SearchResult): Promise<void> {
     const values = { year: result.year === null ? '' : String(result.year) };
-    if (this.config().isDuplicate(result.title, values, this.items())) {
+    if (this.items().some((item) => this.isSameSearchMovie(item, result))) {
       this.error.set('Esse item já está na lista de vocês.');
       return;
     }
 
     this.saving.set(true);
     try {
+      const metadata = this.config().buildMetadata({
+        ...values,
+        title: result.title,
+        note: '',
+      });
+      if (result.overview) {
+        metadata['overview'] = result.overview;
+      }
+      if (result.genres?.length) {
+        metadata['genres'] = result.genres;
+      }
       const item = await this.itemsService.add({
         type: this.config().type,
         title: result.title,
         external_id: result.external_id,
         image_url: result.image_url,
-        metadata: this.config().buildMetadata({ ...values, title: result.title, note: '' }),
+        metadata,
       });
       this.upsertItem(item);
       this.searchControl.setValue('');
@@ -816,6 +931,68 @@ export class ItemsListComponent {
     return typeof value === 'string' ? this.coversService.validateExternalUrl(value) : null;
   }
 
+  protected searchResultKey(result: SearchResult): string {
+    return result.external_id ?? `${result.title}-${result.year ?? ''}`;
+  }
+
+  trailerVideoId(item: ListItem): string | null {
+    const raw = item.metadata['trailer_url'];
+    return typeof raw === 'string' ? this.youtubeVideoId(raw) : null;
+  }
+
+  trailerUrl(item: ListItem): string | null {
+    const videoId = this.trailerVideoId(item);
+    return videoId ? `https://www.youtube.com/watch?v=${videoId}` : null;
+  }
+
+  trailerThumbnail(videoId: string): string {
+    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  }
+
+  private normalizeTrailerUrl(raw: string): string | null {
+    const videoId = this.youtubeVideoId(raw);
+    return videoId ? `https://www.youtube.com/watch?v=${videoId}` : null;
+  }
+
+  private isSameSearchMovie(item: ListItem, result: SearchResult): boolean {
+    if (result.external_id !== null && item.external_id === result.external_id) {
+      return true;
+    }
+    const sameTitle =
+      item.title.trim().toLocaleLowerCase() === result.title.trim().toLocaleLowerCase();
+    const itemYear = item.metadata.year;
+    return sameTitle &&
+      (result.year === null || itemYear == null || itemYear === result.year);
+  }
+
+  private youtubeVideoId(raw: string): string | null {
+    try {
+      const url = new URL(raw.trim());
+      const host = url.hostname.toLocaleLowerCase();
+      if (
+        url.protocol !== 'https:' ||
+        url.username ||
+        url.password ||
+        !['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be'].includes(host)
+      ) {
+        return null;
+      }
+
+      let videoId: string | null = null;
+      if (host === 'youtu.be') {
+        videoId = url.pathname.split('/').filter(Boolean)[0] ?? null;
+      } else if (url.pathname === '/watch') {
+        videoId = url.searchParams.get('v');
+      } else if (/^\/(embed|shorts|live)\//.test(url.pathname)) {
+        videoId = url.pathname.split('/')[2] ?? null;
+      }
+
+      return videoId && /^[\w-]{11}$/.test(videoId) ? videoId : null;
+    } catch {
+      return null;
+    }
+  }
+
   mapUrl(item: ListItem): string {
     const city = item.metadata['city'];
     const address = typeof city === 'string' ? city : '';
@@ -827,6 +1004,7 @@ export class ItemsListComponent {
   private async search(query: string): Promise<void> {
     const sequence = ++this.searchSequence;
     this.searchResults.set([]);
+    this.searchError.set(null);
     this.searchReady.set(false);
     if (query.length < 2) {
       this.searching.set(false);
@@ -840,7 +1018,10 @@ export class ItemsListComponent {
         this.searchReady.set(true);
       }
     } catch {
-      this.error.set('Não foi possível buscar agora. Tente novamente.');
+      if (sequence === this.searchSequence) {
+        this.searchError.set('Não foi possível buscar sugestões agora. Você ainda pode adicionar o filme manualmente.');
+        this.searchReady.set(true);
+      }
     } finally {
       if (sequence === this.searchSequence) {
         this.searching.set(false);
@@ -917,6 +1098,7 @@ export class ItemsListComponent {
     this.error.set(null);
     this.formError.set(null);
     this.duplicateError.set(null);
+    this.trailerError.set(null);
   }
 
   private errorMessage(error: unknown): string {
