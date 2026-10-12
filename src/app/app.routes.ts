@@ -15,6 +15,20 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   {
+    path: 'recuperar-senha',
+    loadComponent: () =>
+      import('./pages/password-recovery.page').then((page) => page.PasswordRecoveryPage),
+  },
+  {
+    path: 'redefinir-senha',
+    loadComponent: () =>
+      import('./pages/password-reset.page').then((page) => page.PasswordResetPage),
+  },
+  {
+    path: 'auth/callback',
+    loadComponent: () => import('./pages/auth-callback.page').then((page) => page.AuthCallbackPage),
+  },
+  {
     path: 'espaco',
     loadComponent: () => import('./pages/space.page').then((page) => page.SpacePage),
     canActivate: [authGuard],

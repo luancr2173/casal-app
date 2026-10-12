@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Casal App</string>
+    <string name="title_activity_main">Casal App</string>
+    <string name="package_name">com.casalapp.app</string>
+    <string name="custom_url_scheme">casalapp</string>
+</resources>

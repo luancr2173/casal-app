@@ -4,14 +4,11 @@ import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
-  readonly client: SupabaseClient = createClient(
-    environment.supabaseUrl,
-    environment.supabaseKey,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
+  readonly client: SupabaseClient = createClient(environment.supabaseUrl, environment.supabaseKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
     },
-  );
+  });
 }

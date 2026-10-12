@@ -41,6 +41,7 @@ import { InputComponent } from '../shared/ui/input.component';
             formControlName="password"
             [error]="passwordError()"
           />
+          <a class="auth-page__recovery" routerLink="/recuperar-senha">Esqueci minha senha</a>
           @if (error()) {
             <p
               class="form-message motion-message-enter"
@@ -75,6 +76,11 @@ import { InputComponent } from '../shared/ui/input.component';
         line-height: 1.5;
       }
 
+      .auth-page__recovery {
+        justify-self: end;
+        margin-top: -12px;
+      }
+
       form {
         display: grid;
         gap: 20px;
@@ -106,7 +112,10 @@ export class LoginPage {
   readonly error = signal<string | null>(null);
   readonly submitted = signal(false);
   readonly form = new FormGroup({
-    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
